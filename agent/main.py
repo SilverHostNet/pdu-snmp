@@ -4,6 +4,7 @@ import uvicorn
 import os
 from typing import Dict, Any
 from snmp_client import SNMPClient
+from supabase_client import supabase_client
 import config
 
 app = FastAPI(title="SNMP Agent API", description="API for controlling PDU outlets via SNMP")
@@ -37,7 +38,13 @@ async def get_outlets() -> Dict[str, Any]:
 async def get_outlet(outlet_id: str) -> Dict[str, Any]:
     """Get outlet by ID"""
     try:
-        return snmp_client.get_outlet_state(outlet_id)
+        result = snmp_client.get_outlet_state(outlet_id)
+        
+        # Log the outlet state to Supabase
+        if supabase_client.is_connected():
+            supabase_client.log_outlet_state(result)
+            
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get outlet {outlet_id}: {str(e)}")
 
@@ -48,6 +55,11 @@ async def toggle_outlet(outlet_id: str) -> Dict[str, Any]:
         result = snmp_client.toggle_outlet(outlet_id)
         if "error" in result:
             raise HTTPException(status_code=500, detail=result["error"])
+        
+        # Log the outlet state change to Supabase
+        if supabase_client.is_connected():
+            supabase_client.log_outlet_state(result)
+            
         return result
     except HTTPException:
         raise
@@ -61,6 +73,11 @@ async def cycle_outlet(outlet_id: str) -> Dict[str, Any]:
         result = snmp_client.cycle_outlet(outlet_id)
         if "error" in result:
             raise HTTPException(status_code=500, detail=result["error"])
+            
+        # Log the outlet state change to Supabase
+        if supabase_client.is_connected():
+            supabase_client.log_outlet_state(result)
+            
         return result
     except HTTPException:
         raise
