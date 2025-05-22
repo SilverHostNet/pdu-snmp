@@ -21,6 +21,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Helper function to convert SNMP types to standard Python types
+def convert_snmp_types(data):
+    """Convert SNMP-specific types to standard Python types for JSON serialization"""
+    if isinstance(data, dict):
+        return {k: convert_snmp_types(v) for k, v in data.items()}
+    elif isinstance(data, list):
+        return [convert_snmp_types(item) for item in data]
+    elif hasattr(data, '__class__') and 'pysnmp.proto.rfc1902' in str(data.__class__):
+        # Convert pysnmp types to standard Python types
+        return int(data) if 'Integer' in str(data.__class__) or 'Gauge' in str(data.__class__) else str(data)
+    else:
+        return data
+
+
 @app.get("/healthz")
 async def health_check() -> Dict[str, str]:
     """Health check endpoint"""
