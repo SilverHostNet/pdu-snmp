@@ -20,7 +20,7 @@ export default function OutletList() {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const agentApiUrl =
-    process.env.NEXT_PUBLIC_AGENT_API_URL || "http://localhost:5000";
+    process.env.NEXT_PUBLIC_AGENT_API_URL || "https://pdu.beardsys.com:5000";
 
   // Initialize Supabase client
   const supabase = createClient(

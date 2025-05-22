@@ -121,4 +121,14 @@ if __name__ == "__main__":
     else:
         print("Supabase not connected. Set SUPABASE_URL and SUPABASE_SERVICE_KEY in .env file to enable database logging.")
     
-    uvicorn.run("main:app", host=host, port=port, reload=debug)
+    # Check if HTTPS is enabled
+    enable_https = os.environ.get("ENABLE_HTTPS", "False").lower() == "true"
+    ssl_cert_file = os.environ.get("SSL_CERT_FILE")
+    ssl_key_file = os.environ.get("SSL_KEY_FILE")
+    
+    if enable_https and ssl_cert_file and ssl_key_file:
+        print(f"HTTPS enabled with certificates:\n - Cert: {ssl_cert_file}\n - Key: {ssl_key_file}")
+        uvicorn.run("main:app", host=host, port=port, reload=debug, ssl_keyfile=ssl_key_file, ssl_certfile=ssl_cert_file)
+    else:
+        print("Running in HTTP mode (HTTPS not enabled or certificates not configured)")
+        uvicorn.run("main:app", host=host, port=port, reload=debug)

@@ -16,7 +16,7 @@ import { createClient } from "@supabase/supabase-js";
 import { useToast } from "@/components/ui/use-toast";
 
 export default function AgentSettings() {
-  const [agentHost, setAgentHost] = useState("localhost");
+  const [agentHost, setAgentHost] = useState("");
   const [agentPort, setAgentPort] = useState("5000");
   const [pduHost, setPduHost] = useState("192.168.1.100");
   const [snmpCommunity, setSnmpCommunity] = useState("public");
@@ -41,11 +41,15 @@ export default function AgentSettings() {
           .limit(1)
           .single();
 
-        if (agentsError) throw agentsError;
+        if (agentsError) {
+          console.error("Error fetching agent settings:", agentsError);
+          // Don't throw error, just continue with default values
+          return;
+        }
 
-        if (agents) {
+        if (agents && agents.host) {
           setAgentHost(agents.host);
-          setAgentPort(agents.port.toString());
+          setAgentPort(agents.port?.toString() || "5000");
           setIsConnected(agents.status === "connected");
 
           // Get PDU device info
@@ -57,14 +61,15 @@ export default function AgentSettings() {
             .single();
 
           if (!devicesError && devices) {
-            setPduHost(devices.host);
-            setSnmpCommunity(devices.snmp_community);
-            setSnmpVersion(devices.snmp_version);
+            if (devices.host) setPduHost(devices.host);
+            if (devices.snmp_community)
+              setSnmpCommunity(devices.snmp_community);
+            if (devices.snmp_version) setSnmpVersion(devices.snmp_version);
           }
         }
       } catch (error) {
         console.error("Error loading settings:", error);
-        // Use default values if no settings found
+        // Continue with default values if no settings found
       }
     };
 
@@ -74,19 +79,31 @@ export default function AgentSettings() {
   const testConnection = async () => {
     setIsSaving(true);
     try {
-      const agentApiUrl = `http://${agentHost}:${agentPort}`;
+      const agentApiUrl = `https://${agentHost}:${agentPort}`;
+      console.log(`Testing connection to: ${agentApiUrl}/healthz`);
+
       const response = await fetch(`${agentApiUrl}/healthz`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
         },
+        // Add these options to help with CORS and other connection issues
+        mode: "cors",
+        cache: "no-cache",
+        credentials: "same-origin",
       });
 
+      console.log("Response status:", response.status);
+
       if (!response.ok) {
-        throw new Error(`Failed to connect to agent: ${response.statusText}`);
+        throw new Error(
+          `Failed to connect to agent: ${response.status} ${response.statusText}`,
+        );
       }
 
       const data = await response.json();
+      console.log("Response data:", data);
+
       if (data.status === "ok") {
         setIsConnected(true);
         toast({
@@ -94,14 +111,16 @@ export default function AgentSettings() {
           description: "Successfully connected to the SNMP agent",
         });
       } else {
-        throw new Error("Agent returned unexpected response");
+        throw new Error(
+          `Agent returned unexpected response: ${JSON.stringify(data)}`,
+        );
       }
     } catch (error) {
       console.error("Error connecting to agent:", error);
       setIsConnected(false);
       toast({
         title: "Connection Failed",
-        description: "Failed to connect to the SNMP agent",
+        description: `Failed to connect to the SNMP agent: ${error.message}`,
         variant: "destructive",
       });
     } finally {
@@ -229,6 +248,7 @@ export default function AgentSettings() {
                 value={agentHost}
                 onChange={(e) => setAgentHost(e.target.value)}
                 placeholder="localhost"
+                autoComplete="off"
               />
             </div>
             <div className="space-y-2">
