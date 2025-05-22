@@ -70,6 +70,9 @@ async def toggle_outlet(outlet_id: str) -> Dict[str, Any]:
         if "error" in result:
             raise HTTPException(status_code=500, detail=result["error"])
         
+        # Convert SNMP types to standard Python types
+        result = convert_snmp_types(result)
+        
         # Log the outlet state change to Supabase
         if supabase_client.is_connected():
             supabase_client.log_outlet_state(result)

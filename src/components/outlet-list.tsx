@@ -32,7 +32,13 @@ export default function OutletList() {
     // Fetch initial outlet data
     const fetchOutlets = async () => {
       try {
-        const response = await fetch(`${agentApiUrl}/outlets`);
+        const response = await fetch(`${agentApiUrl}/outlets`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          mode: "cors",
+        });
         if (!response.ok) {
           throw new Error(`Failed to fetch outlets: ${response.statusText}`);
         }
