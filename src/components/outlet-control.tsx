@@ -25,6 +25,9 @@ export default function OutletControl({ outlet }: OutletProps) {
   const toggleOutlet = async () => {
     setIsLoading(true);
     try {
+      console.log(
+        `Toggling outlet ${outlet.id} at: ${agentApiUrl}/outlets/${outlet.id}/toggle`,
+      );
       const response = await fetch(
         `${agentApiUrl}/outlets/${outlet.id}/toggle`,
         {
@@ -32,6 +35,8 @@ export default function OutletControl({ outlet }: OutletProps) {
           headers: {
             "Content-Type": "application/json",
           },
+          mode: "cors",
+          cache: "no-cache",
         },
       );
 

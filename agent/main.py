@@ -13,13 +13,15 @@ app = FastAPI(title="SNMP Agent API", description="API for controlling PDU outle
 # Initialize SNMP client
 snmp_client = SNMPClient()
 
-# Configure CORS
+# Configure CORS - Updated to be more permissive for troubleshooting
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace with specific origins
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=["*"],  # Allow all origins for development
+    allow_credentials=False,  # Set to False to avoid issues with credentials
+    allow_methods=["*"],  # Allow all methods
+    allow_headers=["*"],  # Allow all headers
+    expose_headers=["*"],  # Expose all headers
+    max_age=86400  # Cache preflight requests for 24 hours
 )
 
 # Helper function to convert SNMP types to standard Python types
@@ -133,13 +135,14 @@ async def get_outlet_history(outlet_id: str, limit: int = 100) -> Dict[str, Any]
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get outlet history: {str(e)}")
 
-# Add middleware to handle CORS preflight requests
+# Enhanced OPTIONS handler for CORS preflight requests
 @app.options("/{path:path}")
 async def options_handler(request: Request, path: str):
     response = Response()
     response.headers["Access-Control-Allow-Origin"] = "*"
     response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With"
+    response.headers["Access-Control-Max-Age"] = "86400"  # 24 hours
     return response
 
 if __name__ == "__main__":
