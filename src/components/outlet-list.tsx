@@ -38,6 +38,7 @@ export default function OutletList() {
             "Content-Type": "application/json",
           },
           mode: "cors",
+          cache: "no-cache",
         });
         if (!response.ok) {
           throw new Error(`Failed to fetch outlets: ${response.statusText}`);
