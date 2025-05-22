@@ -151,6 +151,7 @@ if __name__ == "__main__":
     debug = config.DEBUG
     print(f"Starting SNMP Agent API on {host}:{port}")
     print(f"PDU IP: {config.SNMP_HOST}, Model: {config.PDU_MODEL}, Outlets: {config.PDU_OUTLETS}")
+    print(f"SNMP Version: {config.SNMP_VERSION}, Community: {config.SNMP_COMMUNITY}")
     
     # Log Supabase connection status
     if supabase_client.is_connected():

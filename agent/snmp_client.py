@@ -82,8 +82,10 @@ class SNMPClient:
     def get_all_outlets(self) -> Dict[str, List[Dict[str, Any]]]:
         """Get all outlets"""
         try:
+            print(f"Getting all outlets (1-{self.num_outlets})")
             outlets = []
             for outlet_num in range(1, self.num_outlets + 1):
+                print(f"Fetching outlet {outlet_num} of {self.num_outlets}")
                 outlet = self.get_outlet_state(str(outlet_num))
                 outlets.append(outlet)
             return {"outlets": outlets}

@@ -78,6 +78,7 @@ export default function OutletControl({ outlet }: OutletProps) {
           },
           mode: "cors",
           cache: "no-cache",
+          credentials: "omit",
         },
       );
 
