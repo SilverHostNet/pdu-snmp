@@ -26,7 +26,7 @@ class SNMPClient:
         
         # State values for Raritan PDUs
         self.states = {
-            "on": 1,
+            "on": 1,  # Note: 7 is also considered 'on' in get_outlet_state
             "off": 0,
             "cycle": 2  # Power cycle operation
         }
