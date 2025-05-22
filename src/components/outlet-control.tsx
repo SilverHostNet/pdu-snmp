@@ -61,6 +61,9 @@ export default function OutletControl({ outlet }: OutletProps) {
   const cycleOutlet = async () => {
     setIsLoading(true);
     try {
+      console.log(
+        `Cycling outlet ${outlet.id} at: ${agentApiUrl}/outlets/${outlet.id}/cycle`,
+      );
       const response = await fetch(
         `${agentApiUrl}/outlets/${outlet.id}/cycle`,
         {
@@ -68,6 +71,8 @@ export default function OutletControl({ outlet }: OutletProps) {
           headers: {
             "Content-Type": "application/json",
           },
+          mode: "cors",
+          cache: "no-cache",
         },
       );
 

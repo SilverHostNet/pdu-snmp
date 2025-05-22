@@ -144,8 +144,10 @@ class SNMPClient:
             # Convert outlet_id to integer for OID
             outlet_num = int(outlet_id)
             
-            # Send cycle command
+            # Send cycle command using the correct OID format for Raritan PDU
+            # Format: .1.3.6.1.4.1.13742.6.4.1.2.1.2.1.<outlet_number>
             control_oid = f"{self.oids['outlet_control']}.1.{outlet_num}"
+            print(f"Cycling outlet {outlet_id} using OID: {control_oid}")
             success = self._snmp_set(control_oid, Integer, self.states["cycle"])
             
             if success:

@@ -6,6 +6,7 @@ from typing import Dict, Any
 from snmp_client import SNMPClient
 from supabase_client import supabase_client
 import config
+import json
 
 app = FastAPI(title="SNMP Agent API", description="API for controlling PDU outlets via SNMP")
 
@@ -44,7 +45,11 @@ async def health_check() -> Dict[str, str]:
 async def get_outlets() -> Dict[str, Any]:
     """Get all outlets"""
     try:
-        return snmp_client.get_all_outlets()
+        result = snmp_client.get_all_outlets()
+        # Convert SNMP types to standard Python types
+        result = convert_snmp_types(result)
+        print(f"Retrieved all outlets: {len(result['outlets'])} outlets found")
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get outlets: {str(e)}")
 
@@ -53,6 +58,9 @@ async def get_outlet(outlet_id: str) -> Dict[str, Any]:
     """Get outlet by ID"""
     try:
         result = snmp_client.get_outlet_state(outlet_id)
+        
+        # Convert SNMP types to standard Python types
+        result = convert_snmp_types(result)
         
         # Log the outlet state to Supabase
         if supabase_client.is_connected():
@@ -115,12 +123,24 @@ async def get_outlet_history(outlet_id: str, limit: int = 100) -> Dict[str, Any]
         result = supabase_client.get_outlet_history(outlet_id, limit)
         if not result["success"]:
             raise HTTPException(status_code=500, detail=result["message"])
+        
+        # Convert any SNMP types in the result
+        result_data = convert_snmp_types(result["data"])
             
-        return result["data"]
+        return result_data
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get outlet history: {str(e)}")
+
+# Add middleware to handle CORS preflight requests
+@app.options("/{path:path}")
+async def options_handler(request: Request, path: str):
+    response = Response()
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    return response
 
 if __name__ == "__main__":
     port = config.API_PORT

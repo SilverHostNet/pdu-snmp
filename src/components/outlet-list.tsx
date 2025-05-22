@@ -32,6 +32,7 @@ export default function OutletList() {
     // Fetch initial outlet data
     const fetchOutlets = async () => {
       try {
+        console.log(`Fetching outlets from: ${agentApiUrl}/outlets`);
         const response = await fetch(`${agentApiUrl}/outlets`, {
           method: "GET",
           headers: {
@@ -99,9 +100,15 @@ export default function OutletList() {
       )
       .subscribe();
 
-    // Clean up subscription on unmount
+    // Set up polling as a fallback for realtime updates
+    const pollingInterval = setInterval(() => {
+      fetchOutlets();
+    }, 30000); // Poll every 30 seconds
+
+    // Clean up subscription and polling on unmount
     return () => {
       subscription.unsubscribe();
+      clearInterval(pollingInterval);
     };
   }, [agentApiUrl, toast]);
 
