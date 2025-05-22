@@ -23,6 +23,11 @@ DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 PDU_MODEL = os.getenv("PDU_MODEL", "PX3")
 PDU_OUTLETS = int(os.getenv("PDU_OUTLETS", "8"))
 
+# SSL Configuration
+SSL_CERT_FILE = os.getenv("SSL_CERT_FILE")
+SSL_KEY_FILE = os.getenv("SSL_KEY_FILE")
+ENABLE_HTTPS = os.getenv("ENABLE_HTTPS", "False").lower() == "true"
+
 # Agent Identification
 AGENT_ID = os.getenv("AGENT_ID", "")
 AGENT_API_KEY = os.getenv("AGENT_API_KEY", "")
